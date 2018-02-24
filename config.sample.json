@@ -1,0 +1,8 @@
+{
+  "http": {
+    "port": 50000
+  },
+  "mongo": {
+    "uri": "mongodb://username:password@hostname/database"
+  }
+}

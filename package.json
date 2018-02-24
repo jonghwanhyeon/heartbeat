@@ -1,0 +1,26 @@
+{
+  "name": "heartbeat",
+  "version": "1.0.0",
+  "description": "Watch your application's liveness via heartbeat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonghwanhyeon/heartbeat.git"
+  },
+  "author": "Jonghwan Hyeon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jonghwanhyeon/heartbeat/issues"
+  },
+  "homepage": "https://github.com/jonghwanhyeon/heartbeat#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-validator": "^4.3.0",
+    "lodash": "^4.17.4",
+    "mongoose": "^5.0.2",
+    "mongoose-timestamp": "^0.6.0"
+  }
+}
