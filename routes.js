@@ -1,34 +1,25 @@
 const _ = require('lodash');
-const { body, param, validationResult } = require('express-validator/check');
-const { matchedData } = require('express-validator/filter');
 
-const HeartbeatError = require('./error');
+const { HeartbeatError, ValidationError } = require('./errors');
 const { Monitor, createNotification } = require('./models/monitor');
+const { dateAfter } = require('./utils');
 
-const { conditionalExists, dateAfter } = require('./utils');
+const validate = (() => {
+  const doValidate = require('./validate');
 
-const validate = (request) => {
-  const result = validationResult(request).formatWith(error => `\`${error.param}\` ${error.msg}`);
-  if (!result.isEmpty()) {
-    throw new HeartbeatError(400, _.head(result.array()));
-  }
-
-  return matchedData(request);
-};
+  return (parameters, keys) => {
+    try {
+      return doValidate(parameters, keys);
+    } catch (error) {
+      if (error instanceof ValidationError) throw new HeartbeatError(400, error.message);
+      else throw error;
+    }
+  };
+})();
 
 const onExpired = (monitor) => {
 
 };
-/*
-  write my own validate function using validate.js
-
-  validate(request, parameters): Object
-    parameters: {
-      name: 'something',
-      optional: true, false
-    }
-
-*/
 
 
 // const loadMonitors = (onExpired) => {
@@ -70,32 +61,8 @@ module.exports = (server) => {
   // });
 
 
-  server.post('/monitors', [
-    body('name')
-      .exists().withMessage('is required')
-      .not().isEmpty().withMessage('must be not empty')
-      .trim(),
-    body('timeout')
-      .optional()
-      .isInt({ gt: 0 }).withMessage('must be a positive integer')
-      .toInt(),
-    body('notification')
-      .exists().withMessage('is required'),
-    body('notification.scheme')
-      .exists().withMessage('is required')
-      .isIn(['pushover', 'webhook']).withMessage('is not supported'),
-    body('notification.user')
-      .custom(conditionalExists(body => _.get(body, 'notification.scheme') === 'pushover'))
-        .withMessage('is required'),
-    body('notification.token')
-      .custom(conditionalExists(body => _.get(body, 'notification.scheme') === 'pushover'))
-        .withMessage('is required'),
-    body('notification.url')
-      .custom(conditionalExists(body => _.get(body, 'notification.scheme') === 'webhook'))
-        .withMessage('is required'),
-  ], (request, response, next) => {
-    const parameters = validate(request);
-    console.log(parameters);
+  server.post('/monitors', (request, response, next) => {
+    const parameters = validate(request.body, ['name', 'timeout?', 'notification']);
     parameters.timeout = parameters.timeout || 3600;
 
     Monitor.create({
@@ -115,10 +82,8 @@ module.exports = (server) => {
     })
   });
 
-  server.get('/monitors/:id', [
-    param('id').isMongoId().withMessage('is not valid'),
-  ], (request, response, next) => {
-    const { id } = validate(request);
+  server.get('/monitors/:id', (request, response, next) => {
+    const { id } = validate(request.params, ['id']);
 
     Monitor.findById(id).then(monitor => {
       if (!monitor) {
@@ -142,33 +107,11 @@ module.exports = (server) => {
     });
   });
 
-  server.put('/monitors/:id', [
-    param('id').isMongoId().withMessage('is not valid'),
-    body('name')
-      .optional()
-      .not().isEmpty().withMessage('must be not empty')
-      .trim(),
-    body('timeout')
-      .optional()
-      .isInt({ gt: 0 }).withMessage('must be a positive integer')
-      .toInt(),
-    body('notification')
-      .optional(),
-    body('notification.scheme')
-      .optional()
-      .isIn(['pushover', 'webhook']).withMessage('is not supported'),
-    body('notification.user')
-      .custom(conditionalExists(body => _.get(body, 'notification.scheme') === 'pushover'))
-        .withMessage('is required'),
-    body('notification.token')
-      .custom(conditionalExists(body => _.get(body, 'notification.scheme') === 'pushover'))
-        .withMessage('is required'),
-    body('notification.url')
-      .custom(conditionalExists(body => _.get(body, 'notification.scheme') === 'webhook'))
-        .withMessage('is required')
-
-  ], (request, response, next) => {
-    const { id, ...parameters } = validate(request);
+  server.put('/monitors/:id', (request, response, next) => {
+    const { id, ...parameters } = validate({
+      ...request.params,
+      ...request.body,
+    }, ['id', 'name?', 'timeout?', 'notification?']);
 
     Monitor.findById(id).then(monitor => {
       if (!monitor) {
@@ -185,7 +128,6 @@ module.exports = (server) => {
             monitor.expiresAt = dateAfter(value * 1000);
             break;
           case 'notification':
-            if (_.isUndefined(value.scheme)) continue;
             monitor.notification = createNotification(value);
             break;
         }
@@ -207,10 +149,8 @@ module.exports = (server) => {
     });
   });
 
-  server.delete('/monitors/:id', [
-    param('id').isMongoId().withMessage('is not valid'),
-  ], (request, response, next) => {
-    const { id } = validate(request);
+  server.delete('/monitors/:id', (request, response, next) => {
+    const { id } = validate(request.params, ['id']);
 
     Monitor.findByIdAndRemove(id).then(monitor => {
       if (!monitor) {

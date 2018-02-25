@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const HeartbeatError = require('./error');
+const { HeartbeatError } = require('./errors');
 
 const config = require('./config.json');
 

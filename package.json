@@ -18,9 +18,9 @@
   "homepage": "https://github.com/jonghwanhyeon/heartbeat#readme",
   "dependencies": {
     "express": "^4.16.2",
-    "express-validator": "^4.3.0",
     "lodash": "^4.17.4",
     "mongoose": "^5.0.2",
-    "mongoose-timestamp": "^0.6.0"
+    "mongoose-timestamp": "^0.6.0",
+    "validator": "^9.4.1"
   }
 }
