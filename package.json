@@ -17,10 +17,12 @@
   },
   "homepage": "https://github.com/jonghwanhyeon/heartbeat#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "express": "^4.16.2",
     "lodash": "^4.17.4",
     "mongoose": "^5.0.2",
     "mongoose-timestamp": "^0.6.0",
+    "nodemon": "^1.15.1",
     "validator": "^9.4.1"
   }
 }
