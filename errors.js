@@ -4,15 +4,22 @@ class HeartbeatError extends Error {
 
     this.statusCode = statusCode;
   }
-};
+}
 
 class ValidationError extends Error {
   constructor(message) {
     super(message);
   }
-};
+}
+
+class MonitorManagerError extends Error {
+  constructor(message) {
+    super(message);
+  }
+}
 
 module.exports = {
 	HeartbeatError,
-	ValidationError
+	ValidationError,
+	MonitorManagerError,
 }
