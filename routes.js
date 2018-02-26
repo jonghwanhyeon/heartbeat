@@ -49,6 +49,7 @@ module.exports = (server) => {
     parameters.timeout = parameters.timeout || 3600;
 
     manager.create(parameters).then(monitor => {
+      console.log(`Created: ${monitor.id} (${monitor.name})`);
       response.json({
         id: monitor.id,
         timeout: monitor.timeout,
@@ -69,6 +70,8 @@ module.exports = (server) => {
       }
 
       manager.tick(monitor).then(updatedMonitor => {
+        console.log(`Tick: ${updatedMonitor.id} (${updatedMonitor.name})`);
+
         response.json({
           id: updatedMonitor.id,
           timeout: updatedMonitor.timeout,
@@ -95,7 +98,10 @@ module.exports = (server) => {
         return next(new HeartbeatError(404, 'Monitor not found'));
       }
 
+      console.log(`Updated: ${monitor.id} (${monitor.name})`);
       manager.tick(monitor).then(updatedMonitor => {
+        console.log(`Tick: ${updatedMonitor.id} (${updatedMonitor.name})`);
+
         response.json({
           id: updatedMonitor.id,
           timeout: updatedMonitor.timeout,
@@ -119,6 +125,7 @@ module.exports = (server) => {
         return next(new HeartbeatError(404, 'Monitor not found'));
       }
 
+      console.log(`Deleted: ${monitor.id} (${monitor.name})`);
       response.json({
         status: 'done',
       });
