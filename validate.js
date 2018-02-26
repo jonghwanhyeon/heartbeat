@@ -48,7 +48,7 @@ const validators = {
         return { scheme, url };
     }
   },
-}
+};
 
 module.exports = (parameters, keys) => {
   return expandKeys(keys).reduce((accumulator, { key, optional }) => {
