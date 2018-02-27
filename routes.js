@@ -44,6 +44,10 @@ module.exports = (server) => {
   const manager = new MonitorManager(onExpired);
   manager.load();
 
+  server.get('/monitors', (request, response, next) => {
+    response.json(manager.statistics());
+  });
+
   server.post('/monitors', (request, response, next) => {
     const parameters = validate(request.body, ['name', 'timeout?', 'notification']);
     parameters.timeout = parameters.timeout || 3600;

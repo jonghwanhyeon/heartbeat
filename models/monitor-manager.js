@@ -8,6 +8,7 @@ class MonitorManager {
   constructor(onExpired) {
     this._onExpired = onExpired;
     this.timers = {};
+    this.updatedAt = new Date();
   }
 
   load() {
@@ -23,6 +24,7 @@ class MonitorManager {
           }
         }
 
+        this.updatedAt = new Date();
         resolve();
       }).catch(reject);
     });
@@ -37,13 +39,20 @@ class MonitorManager {
         notification: createNotification(notification),
       }).then(monitor => {
         this.add(monitor);
+
+        this.updatedAt = new Date();
         resolve(monitor);
       }).catch(reject);
     });
   }
 
   get(id) {
-    return Monitor.findById(id);
+    return new Promise((resolve, reject) => {
+      Monitor.findById(id).then(monitor => {
+        this.updatedAt = new Date();
+        resolve(monitor);
+      }).catch(reject);
+    });
   }
 
   update(id, { name, timeout, notification }) {
@@ -66,7 +75,10 @@ class MonitorManager {
           monitor.notification = createNotification(notification);
         }
 
-        monitor.save().then(resolve).catch(reject);
+        monitor.save().then(updatedMonitor => {
+          this.updatedAt = new Date();
+          resolve(updatedMonitor);
+        }).catch(reject);
       }).catch(reject);
     });
   }
@@ -75,6 +87,8 @@ class MonitorManager {
     return new Promise((resolve, reject) => {
       Monitor.findByIdAndRemove(id).then(monitor => {
         this.remove(monitor);
+
+        this.updatedAt = new Date();
         resolve(monitor);
       }).catch(reject);
     });
@@ -87,6 +101,8 @@ class MonitorManager {
       monitor.expiresAt = dateAfter(monitor.timeout * 1000);
       monitor.save().then(updatedMonitor => {
         this.add(updatedMonitor);
+
+        this.updatedAt = new Date();
         resolve(updatedMonitor);
       }).catch(reject);
     });
@@ -111,6 +127,13 @@ class MonitorManager {
   onExpired(monitor) {
     monitor.expiresAt = undefined;
     monitor.save().then(this._onExpired);
+  }
+
+  statistics() {
+    return {
+      count: Object.keys(this.timers).length,
+      updatedAt: this.updatedAt,
+    }
   }
 }
 
